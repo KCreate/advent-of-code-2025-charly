@@ -1,3 +1,5 @@
+#!/usr/local/bin/charly
+
 if ARGV.length < 2 {
   print("Missing filepath")
   exit(1)
