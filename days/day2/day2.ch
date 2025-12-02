@@ -15,38 +15,36 @@ const ranges = input
         (first.to_number(), last.to_number())
     })
 
-const allIds = []
-ranges.each(->(range) {
-    const (first, last) = range
-    first.upTo(last, ->(idx) {
-        allIds.push(idx)
-    })
-})
+const invalidIdsPerRange = ranges
+    .parallelMap(->(range) {
+        const (first, last) = range
 
-func checkIsInvalid(entry) {
-    const length = entry.length
-    const possibleParts = 1.upTo(length / 2, ->(partLength) {
-        entry.substring(0, partLength)
-    })
-        .filter(->(part) {
-            // filter out parts that cannot possibly form the entire pattern
-            entry.length % part.length == 0
+        const invalidIds = []
+
+        first.upTo(last, ->(i) {
+            const entry = "{i}"
+
+            const length = entry.length
+            const parts = 1.collectUpTo(length / 2, ->(partlength) entry.substring(0, partlength))
+            const possibleParts = parts.filter(->(part) {
+                entry.length % part.length == 0
+            })
+
+            const isInvalid = possibleParts.any(->(part) {
+                const multiplier = entry.length / part.length
+                const check = part * multiplier
+                check == entry
+            })
+
+            if isInvalid {
+                invalidIds.push(i)
+            }
         })
 
-    possibleParts.filter(->(part) {
-        const multiplier = entry.length / part.length
-        const check = part * multiplier
-        check == entry
-    }).notEmpty()
-}
-
-const invalidIds = allIds
-    .map(->(id) "{id}")
-    .filter(->(entry) {
-        checkIsInvalid(entry)
+        invalidIds
     })
-    .map(->(entry) entry.to_number())
+    .flatten()
 
-const totalSum = invalidIds.reduce(0, ->(p, c) p + c)
+const totalSum = invalidIdsPerRange.reduce(0, ->(p, c) p + c)
 
 print(totalSum)
