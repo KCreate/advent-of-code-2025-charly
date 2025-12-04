@@ -47,15 +47,6 @@ func adjacent_at_coords(grid, x, y) {
     })
 }
 
-func dump_grid(grid) {
-    grid.each(->(row) {
-        row.each(->(v) {
-            write(v)
-        })
-        write("\n")
-    })
-}
-
 let current_grid = grid
 let total_removed_rolls = 0
 loop {
