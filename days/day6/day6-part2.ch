@@ -59,4 +59,4 @@ const solutions = problems.map(->(problem) {
 
 const totalSum = solutions.sum()
 
-print(totalSum)
+print("totalSum = {totalSum}")
