@@ -27,8 +27,10 @@ const problems = operands
     .map(->(operand) {
         let inputData = []
 
-        while readerOffset < maxLineLength {
-            readerOffset += 1
+        loop {
+            if inputs.first().empty() {
+                break
+            }
 
             const charsRead = inputs.map(->(chars) {
                 chars.pop()

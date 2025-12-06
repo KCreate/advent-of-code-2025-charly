@@ -11,7 +11,7 @@ const lines = readfile(input_path)
     .map(->(line, i, lines) {
         let line = line
             .split(" ")
-            .filter(->(l) l.length > 0)
+            .filterEmpty()
 
         if i < lines.length - 1 {
             line = line.map(->(l) l.to_number())
@@ -27,20 +27,12 @@ const problems = operators
         (op, operands)
     })
 
-const add = ->(a, b) a + b
-const mul = ->(a, b) a * b
-
 const results = problems.map(->(problem) {
     const (operand, inputs) = problem
-    const initial = operand == "+" ? 0 : 1
-    const transformer = operand == "+" ? add : mul
-    const result = inputs.reduce(initial, transformer)
-
-    print("{operand} {inputs} = {result}")
-
+    const result = operand == "+" ? inputs.sum() : inputs.product()
     result
 })
 
-const totalSum = results.reduce(0, ->(p, e) p + e)
+const totalSum = results.sum()
 
 print("totalSum = {totalSum}")
