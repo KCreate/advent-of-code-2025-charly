@@ -18,7 +18,7 @@ let totalSum = 0
 const currentProblemOperands = []
 lines.first().indices().reverse().each(->(i) {
     const column = lines.map(->(line) line[i])
-    const digits = column.sublist(0, column.length - 1)
+    const digits = column.dropLast(1)
     const operand = column.last()
 
     if (digits.all(->(d) d == " ")) {
