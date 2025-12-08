@@ -47,7 +47,6 @@ class Graph {
 
     func add_node(node) {
         @nodes.push(node)
-        @nodes.length - 1
         @cached_node_outgoing_edges.push([])
     }
 
@@ -185,10 +184,6 @@ loop {
         g.update_groups()
     }
 
-    print("iteration {i}")
-    print("connected {n1} <-> {n2}")
-    print("g.groups.length = {g.groups.length}")
-
     if g.groups.length == 1 {
         print("productOfXCoordinates = {n1[0] * n2[0]}")
         break
@@ -196,12 +191,4 @@ loop {
 
     i += 1
 }
-
-const groupsSortedBySize = g.groups.copy().sort(->(a, b) b.length - a.length)
-
-const largestThreeGroups = groupsSortedBySize.takeFirst(3)
-
-const sizeProduct = largestThreeGroups.map(->(group) group.length).product()
-
-print("sizeProduct = {sizeProduct}")
 
