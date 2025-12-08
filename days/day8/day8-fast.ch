@@ -64,26 +64,6 @@ class StringSet {
     }
 }
 
-class Point {
-    property x
-    property y
-    property z
-
-    func distance_to(other) {
-        const (dx, dy, dz) = (
-            (self.x - other.x).abs(),
-            (self.y - other.y).abs(),
-            (self.z - other.z).abs()
-        )
-
-        (dx * dx + dy * dy + dz * dz).sqrt()
-    }
-
-    func to_string {
-        "({self.x}, {self.y}, {self.z})"
-    }
-}
-
 class PointGraph {
     property nodes = []
     property edges = []
@@ -122,13 +102,13 @@ class PointGraph {
     }
 }
 
-const points = lines.map(->(line) {
-    const (x, y, z) = line.split(",").map(->(s) s.to_number())
-    Point(x, y, z)
-})
+const points = lines
+    .map(->(line) {
+        line.split(",").map(->(s) s.to_number())
+    })
 
-const edges = List.build(->(list) {
-    Stopwatch.section("Building permutations", ->{
+const edges = List
+    .build(->(list) {
         let length = points.length
         let i = 0
         let j = 1
@@ -142,53 +122,51 @@ const edges = List.build(->(list) {
             j = i + 1
         }
     })
-})
 
-func get_distance_for_edge(edge) {
-    const (i1, i2) = edge
-    const (n1, n2) = (
-        points[i1],
-        points[i2]
-    )
-    n1.distance_to(n2)
-}
-
-const edgeDistancePairs = Stopwatch.section("Calculating edge lengths", ->{
-    edges.map(->(edge) {
-        (edge, get_distance_for_edge(edge))
+const edgeDistancePairs = edges
+    .map(->(edge) {
+        const (i1, i2) = edge
+        const (x1, y1, z1) = points[i1]
+        const (x2, y2, z2) = points[i2]
+        const (dx, dy, dz) = (
+            (x1 - x2).abs(),
+            (y1 - y2).abs(),
+            (z1 - z2).abs()
+        )
+        const distance = (dx * dx + dy * dy + dz * dz).sqrt()
+        (edge, distance)
     })
-})
 
-const sortedEdges = Stopwatch.section("Sorting edges by length", ->{
-    edgeDistancePairs.sort(->(a, b) {
+const sortedEdges = edgeDistancePairs
+    .sort(->(a, b) {
         const (e1, d1) = a
         const (e2, d2) = b
         d1 - d2
-    }).map(->(edgeDistancePair) edgeDistancePair[0])
-})
+    })
+    .map(->(edgeDistancePair) edgeDistancePair[0])
 
 const graph = PointGraph()
-Stopwatch.section("Adding points to graph", ->{
-    points.each(->(point) {
-        graph.add_point(point)
-    })
+points.each(->(point) {
+    graph.add_point(point)
 })
 
-try Stopwatch.section("Adding edges to graph", ->{
-    let group_count = graph.nodes.length
-    sortedEdges.each(->(edge, index) {
-        const (i1, i2) = edge
-        const did_merge_groups = graph.add_edge(i1, i2)
+let group_count = graph.nodes.length
+const queue = sortedEdges.reverse()
 
-        if did_merge_groups {
-            group_count -= 1
-        }
+loop {
+    const edge = queue.pop()
+    const (i1, i2) = edge
+    const did_merge_groups = graph.add_edge(i1, i2)
 
-        if group_count == 1 {
-            const (p1, p2) = (points[i1], points[i2])
-            const (x1, x2) = (p1.x, p2.x)
-            print("x1 * x2 = {x1 * x2}")
-            throw "program completed"
-        }
-    })
-}) catch {}
+    if did_merge_groups {
+        group_count -= 1
+    }
+
+    if group_count == 1 {
+        const (p1, p2) = (points[i1], points[i2])
+        const (x1, x2) = (p1[0], p2[0])
+        print("x1 * x2 = {x1 * x2}")
+        break
+    }
+}
+
