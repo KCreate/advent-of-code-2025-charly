@@ -13,7 +13,7 @@ const corners = lines.map(->(line) {
     (x.to_number(), y.to_number())
 })
 
-const polygon_lines = corners.linearPairs().concat([(
+const polygon_lines = corners.adjacentPairs().concat([(
     corners.last(),
     corners.first()
 )])
@@ -123,7 +123,7 @@ func get_rectangle_lines(rectangle) {
 }
 
 const rectangleAreaPairs = corners
-    .unorderedPairs()
+    .unidirectionalPermutations()
     .map(->(corners) {
         const (c1, c2) = corners
         const (x1, y1) = c1

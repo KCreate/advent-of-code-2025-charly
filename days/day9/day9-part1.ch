@@ -13,7 +13,7 @@ const corners = lines.map(->(line) {
     (x.to_number(), y.to_number())
 })
 
-const rectangles = corners.unorderedPairs()
+const rectangles = corners.unidirectionalPermutations()
 
 const areas = rectangles.map(->(pair) {
     const (c1, c2) = pair
