@@ -139,6 +139,41 @@ const rectangleAreaPairs = corners
         a[1] - b[1]
     })
 
+func rectangle_contains_point_with_border(rectangle, point) {
+    const (c1, c2) = rectangle
+    const (x1, y1) = c1
+    const (x2, y2) = c2
+    const (px, py) = point
+    return px.inBetween(x1, x2) && py.inBetween(y1, y2)
+}
+
+func dump_grid(rectangle) {
+    const limitX = 15
+    const limitY = 15
+
+    let x = 0
+    let y = 0
+    while y < limitY {
+        while x < limitX {
+            const is_corner = corners.findBy(->(c) c == (x, y)) != null
+            const is_rectangle = rectangle_contains_point_with_border(rectangle, (x, y))
+
+            if is_corner {
+                write("O")
+            } else if is_rectangle {
+                write("x")
+            } else {
+                write(" ")
+            }
+
+            x += 1
+        }
+        print()
+        x = 0
+        y += 1
+    }
+}
+
 func find_largest_rectangle {
     while rectangleAreaPairs.notEmpty() {
         const pair = rectangleAreaPairs.pop()
@@ -157,6 +192,8 @@ func find_largest_rectangle {
             return false
         })
         if any_check_failed continue
+
+        dump_grid(pair[0])
 
         return pair
     }
