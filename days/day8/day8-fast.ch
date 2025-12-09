@@ -8,81 +8,16 @@ if ARGV.length < 2 {
 const input_path = ARGV[1]
 const lines = readfile(input_path).lines()
 
-class StringSet {
-    property bins
-    property bin_count
-
-    func constructor(@bin_count = 256) {
-        self.bins = List.create(self.bin_count)
-    }
-
-    func add(value) {
-        value = "{value}"
-        if !self.contains(value) {
-            const bin = self.get_bin_for_value(value)
-            bin.push(value)
-        }
-        self
-    }
-
-    func contains(value) {
-        value = "{value}"
-        const bin = self.get_bin_for_value(value)
-        bin.find(value) != null
-    }
-
-    func remove(value) {
-        value = "{value}"
-        const bin = self.get_bin_for_value(value)
-        const index = bin.find(value)
-        if index == null return false
-        bin.erase(index)
-    }
-
-    func collect {
-        self.bins.flatten().filter(->(e) e!= null)
-    }
-
-    private func get_bin_for_value(value) {
-        const index = self.get_bin_index_for_value(value)
-        self.get_or_initialize_bin(index)
-    }
-
-    private func get_or_initialize_bin(index) {
-        if self.bins[index] == null {
-            self.bins[index] = []
-        }
-        self.bins[index]
-    }
-
-    private func get_bin_index_for_value(value) {
-        self.hash(value) % self.bin_count
-    }
-
-    private func hash(value) {
-        value.hashcode
-    }
-}
-
 class PointGraph {
-    property nodes = []
-    property edges = []
     property groups = []
 
-    func add_point(node) {
-        const id = self.nodes.length
-        self.nodes.push([
-            node,
-            [] // indexes of connected nodes
-        ])
-        self.groups.push([id, [id]])
+    func constructor(count) {
+        @groups = List.create_with(count, ->(i) [i, [i]])
     }
 
-    // returns false if no groups were merged, true if two groups were merged
+    // returns true if this edge caused two groups to be merged
+    // returns false otherwise
     func add_edge(i1, i2) {
-        self.edges.push((i1, i2))
-        self.nodes[i1][1].push(i2)
-        self.nodes[i2][1].push(i1)
 
         // merge the groups for that id
         const (g1id, g1list) = self.groups[i1]
@@ -95,6 +30,8 @@ class PointGraph {
 
         const newGroupMemberList = g1list.concat(g2list)
         const newGroup = [g1id, newGroupMemberList]
+
+        // update the group references of all points in this group
         newGroupMemberList.each(->(id) {
             self.groups[id] = newGroup
         })
@@ -102,11 +39,15 @@ class PointGraph {
     }
 }
 
+// parse the list of points from the source file
 const points = lines
     .map(->(line) {
         line.split(",").map(->(s) s.to_number())
     })
 
+// build a list with all possible edges between all points
+// does not include edges where a node points to itself
+// (1, 2) and (2, 1) are treated as being identical
 const edges = List
     .build(->(list) {
         let length = points.length
@@ -123,6 +64,7 @@ const edges = List
         }
     })
 
+// calculate the length of all edges
 const edgeDistancePairs = edges
     .map(->(edge) {
         const (i1, i2) = edge
@@ -137,6 +79,7 @@ const edgeDistancePairs = edges
         (edge, distance)
     })
 
+// sort the list of edges by their distance
 const sortedEdges = edgeDistancePairs
     .sort(->(a, b) {
         const (e1, d1) = a
@@ -145,23 +88,23 @@ const sortedEdges = edgeDistancePairs
     })
     .map(->(edgeDistancePair) edgeDistancePair[0])
 
-const graph = PointGraph()
-points.each(->(point) {
-    graph.add_point(point)
-})
+// construct the point graph
+const graph = PointGraph(points.length)
 
-let group_count = graph.nodes.length
+// add edges to the point graph until the entire graph is a single group
 const queue = sortedEdges.reverse()
-
+let group_count = points.length
 loop {
     const edge = queue.pop()
     const (i1, i2) = edge
     const did_merge_groups = graph.add_edge(i1, i2)
 
+    // update group count if this edge merged two groups
     if did_merge_groups {
         group_count -= 1
     }
 
+    // coallesced all groups, print the solution to the puzzle
     if group_count == 1 {
         const (p1, p2) = (points[i1], points[i2])
         const (x1, x2) = (p1[0], p2[0])
