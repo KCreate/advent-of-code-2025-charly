@@ -1,18 +1,4 @@
-class Machine {
-    property indicatorLights
-    property buttons
-    property joltageRequirements
-
-    func apply_buttons(buttons) {
-        const state = List.create_with(self.indicatorLights.length, ->false)
-
-        buttons.each(->(button) {
-            button.each(->(i) state[i] = !state[i])
-        })
-
-        state.join("", ->(s) s ? "#" : ".")
-    }
-}
+const Machine = import "./machine.ch"
 
 export func parse_input(lines) = lines.map(->(line) {
     const (indicatorLights, ...buttons, joltageRequirements) = line.split(" ")

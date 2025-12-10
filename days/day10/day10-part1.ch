@@ -17,7 +17,7 @@ const totalPresses = machines.parallelMap(->(machine) {
     const queue = machine.buttons.map(->(button) [button])
     while queue.notEmpty() {
         const combination = queue.pop_front()
-        const current_state = machine.apply_buttons(combination)
+        const current_state = machine.apply_buttons_to_indicators(combination)
 
         if current_state == machine.indicatorLights return combination.length
 
