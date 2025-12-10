@@ -3,40 +3,31 @@ class Machine {
     property buttons
     property joltageRequirements
 
-    func dump {
-        print("#: {@indicatorLights} {@buttons} {@joltageRequirements}")
+    func apply_buttons(buttons) {
+        const state = List.create_with(self.indicatorLights.length, ->false)
+
+        buttons.each(->(button) {
+            button.each(->(i) state[i] = !state[i])
+        })
+
+        state.join("", ->(s) s ? "#" : ".")
     }
 }
 
 export func parse_input(lines) = lines.map(->(line) {
-    let (indicatorLights, ...buttons, joltageRequirements) = line.split(" ")
+    const (indicatorLights, ...buttons, joltageRequirements) = line.split(" ")
 
-    indicatorLights = indicatorLights
-        .split("")
-        .dropFirst()
-        .dropLast()
-        .map(->(i) {
-            if i == "." return false
-            return true
-        })
-
-    buttons = buttons.map(->(button) {
-        button
-            .split("")
-            .dropFirst()
-            .dropLast()
-            .join("")
+    return Machine(
+        indicatorLights.substring(1, indicatorLights.length - 2),
+        buttons.map(->(button) {
+            button
+                .substring(1, button.length - 2)
+                .split(",")
+                .map(->(c) c.to_number())
+        }),
+        joltageRequirements
+            .substring(1, joltageRequirements.length - 2)
             .split(",")
             .map(->(c) c.to_number())
-    })
-
-    joltageRequirements = joltageRequirements
-        .split("")
-        .dropFirst()
-        .dropLast()
-        .join("")
-        .split(",")
-        .map(->(c) c.to_number())
-
-    return Machine(indicatorLights, buttons, joltageRequirements)
+    )
 })
