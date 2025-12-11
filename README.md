@@ -21,3 +21,4 @@ The experience of solving each puzzle is documented in a dedicated blog article.
 - Day 8 ([Blog Article](https://leonard.swiss/blog/aoc-2025/day8/)) ([Code](https://github.com/KCreate/advent-of-code-2025-charly/blob/main/days/day8/))
 - Day 9 ([Blog Article](https://leonard.swiss/blog/aoc-2025/day9/)) ([Code](https://github.com/KCreate/advent-of-code-2025-charly/blob/main/days/day9/))
 - Day 10 ([Blog Article](https://leonard.swiss/blog/aoc-2025/day10/)) ([Code](https://github.com/KCreate/advent-of-code-2025-charly/blob/main/days/day10/))
+- Day 11 ([Blog Article](https://leonard.swiss/blog/aoc-2025/day11/)) ([Code](https://github.com/KCreate/advent-of-code-2025-charly/blob/main/days/day11/))
