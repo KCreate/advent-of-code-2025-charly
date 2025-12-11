@@ -1,6 +1,6 @@
 #!/usr/local/bin/charly
 
-const HashMap = import "./hashmap.ch"
+import hashmap as HashMap
 
 if ARGV.length < 2 {
   print("Missing filepath")
@@ -36,14 +36,10 @@ devices.each(->(device) {
 
 class Wave {
     property name
-    property total_paths_to_here
-    property total_paths_with_fft
-    property total_paths_with_dac
-    property total_paths_with_both
-
-    func to_tuple {
-        (name, total_paths_to_here, total_paths_with_fft, total_paths_with_dac, total_paths_with_both)
-    }
+    property to_here
+    property with_fft
+    property with_dac
+    property with_both
 }
 
 const collapsed_waves = HashMap().also(->(map) {
@@ -55,10 +51,6 @@ let wavefront = HashMap().also(->(map) map.set("svr", true)).keys()
 func solve {
     loop {
         const next_wavefront = HashMap()
-
-        print(wavefront)
-        // prompt("")
-
         wavefront.each(->(wave) {
             const in_waves = device_in_connections.at(wave)
             const can_be_collapsed = in_waves.all(->(in_name) collapsed_waves.contains(in_name))
@@ -68,29 +60,26 @@ func solve {
                 // collapse the wave
                 const collapsed_wave = Wave(wave, 0, 0, 0, 0)
                 const collapsed_in_waves = in_waves.map(->(in_name) collapsed_waves.at(in_name))
-                collapsed_wave.total_paths_to_here = collapsed_in_waves.map(->(wave) wave.total_paths_to_here).sum()
-                collapsed_wave.total_paths_with_fft = collapsed_in_waves.map(->(wave) wave.total_paths_with_fft).sum()
-                collapsed_wave.total_paths_with_dac = collapsed_in_waves.map(->(wave) wave.total_paths_with_dac).sum()
-                collapsed_wave.total_paths_with_both = collapsed_in_waves.map(->(wave) wave.total_paths_with_both).sum()
+                collapsed_wave.to_here = collapsed_in_waves.map(->(wave) wave.to_here).sum()
+                collapsed_wave.with_fft = collapsed_in_waves.map(->(wave) wave.with_fft).sum()
+                collapsed_wave.with_dac = collapsed_in_waves.map(->(wave) wave.with_dac).sum()
+                collapsed_wave.with_both = collapsed_in_waves.map(->(wave) wave.with_both).sum()
                 collapsed_waves.set(wave, collapsed_wave)
 
                 if wave == "fft" {
-                    collapsed_wave.total_paths_with_fft = collapsed_wave.total_paths_to_here
+                    collapsed_wave.with_fft = collapsed_wave.to_here
                 }
 
                 if wave == "dac" {
-                    collapsed_wave.total_paths_with_dac = collapsed_wave.total_paths_to_here
+                    collapsed_wave.with_dac = collapsed_wave.to_here
                 }
 
-                if collapsed_wave.total_paths_with_both == 0 {
-                    const with_fft = collapsed_wave.total_paths_with_fft
-                    const with_dac = collapsed_wave.total_paths_with_dac
-                    collapsed_wave.total_paths_with_both = with_fft.min(with_dac)
+                if collapsed_wave.with_both == 0 {
+                    const with_fft = collapsed_wave.with_fft
+                    const with_dac = collapsed_wave.with_dac
+                    collapsed_wave.with_both = with_fft.min(with_dac)
                 }
 
-                print("collapsed", collapsed_wave.to_tuple())
-
-                // propagate out waves
                 device_out_connections.at(wave).each(->(out_name) {
                     next_wavefront.set(out_name, true)
                 })
@@ -99,7 +88,7 @@ func solve {
             }
         })
 
-        if next_wavefront.entries().empty() {
+        if next_wavefront.empty() {
             return collapsed_waves.at("out")
         }
 
@@ -108,41 +97,4 @@ func solve {
 }
 
 const out_wave = solve()
-print(out_wave.to_tuple())
-print("total paths with both fft and dac =", out_wave.total_paths_with_both)
-
-
-
-/*
-svr 1 0 0 0
-
-bbb ? ? ? ? aaa ? ? ? ?
-
-bbb 1 0 0 0 aaa 1 0 0 0
-
-tty ? ? ? ? fft ? ? ? ?
-
-tty 1 0 0 0 fft 2 2 0 0
-
-ddd ? ? ? ? ccc ? ? ? ?
-
-ddd ? ? ? ? ccc 3 2 0 0
-
-ddd ? ? ? ? eee ? ? ? ?
-
-ddd 4 2 0 0 eee 3 2 0 0
-
-hub ? ? ? ? dac ? ? ? ?
-
-hub 4 2 0 0 dac 3 2 3 2
-
-fff ? ? ? ?
-
-fff 7 4 3 2
-
-ggg ? ? ? ? hhh ? ? ? ?
-
-ggg 7 4 3 2 hhh 7 4 3 2
-
-out 14 8 6 4
-*/
+print("total paths with both fft and dac =", out_wave.with_both)
