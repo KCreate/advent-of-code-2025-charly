@@ -1,8 +1,8 @@
 svr: aaa bbb
 aaa: fft
 fft: ccc
-bbb: tty fft
-tty: ccc ddd
+bbb: tty
+tty: ccc
 ccc: ddd eee
 ddd: hub
 hub: fff

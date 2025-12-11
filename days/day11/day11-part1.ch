@@ -1,6 +1,6 @@
 #!/usr/local/bin/charly
 
-const HashMap = import "./hashmap.ch"
+import hashmap as HashMap
 
 if ARGV.length < 2 {
   print("Missing filepath")

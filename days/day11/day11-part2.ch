@@ -48,53 +48,41 @@ const collapsed_waves = HashMap().also(->(map) {
 
 let wavefront = HashMap().also(->(map) map.set("svr", true)).keys()
 
-func solve {
-    loop {
-        const next_wavefront = HashMap()
-        wavefront.each(->(wave) {
-            const in_waves = device_in_connections.at(wave)
-            const can_be_collapsed = in_waves.all(->(in_name) collapsed_waves.contains(in_name))
+while wavefront.notEmpty() {
+    const next_wavefront = HashMap()
 
-            if can_be_collapsed {
+    wavefront.each(->(wave) {
+        const in_waves = device_in_connections.at(wave)
+        const can_be_collapsed = in_waves.all(->(in_name) collapsed_waves.contains(in_name))
 
-                // collapse the wave
-                const collapsed_wave = Wave(wave, 0, 0, 0, 0)
-                const collapsed_in_waves = in_waves.map(->(in_name) collapsed_waves.at(in_name))
-                collapsed_wave.to_here = collapsed_in_waves.map(->(wave) wave.to_here).sum()
-                collapsed_wave.with_fft = collapsed_in_waves.map(->(wave) wave.with_fft).sum()
-                collapsed_wave.with_dac = collapsed_in_waves.map(->(wave) wave.with_dac).sum()
-                collapsed_wave.with_both = collapsed_in_waves.map(->(wave) wave.with_both).sum()
-                collapsed_waves.set(wave, collapsed_wave)
+        if can_be_collapsed {
+            const collapsed_wave = Wave(wave, 0, 0, 0, 0)
+            const collapsed_in_waves = in_waves.map(->(in_name) collapsed_waves.at(in_name))
+            collapsed_wave.to_here = collapsed_in_waves.map(->(wave) wave.to_here).sum()
+            collapsed_wave.with_fft = collapsed_in_waves.map(->(wave) wave.with_fft).sum()
+            collapsed_wave.with_dac = collapsed_in_waves.map(->(wave) wave.with_dac).sum()
+            collapsed_wave.with_both = collapsed_in_waves.map(->(wave) wave.with_both).sum()
+            collapsed_waves.set(wave, collapsed_wave)
 
-                if wave == "fft" {
-                    collapsed_wave.with_fft = collapsed_wave.to_here
-                }
+            if wave == "fft" collapsed_wave.with_fft = collapsed_wave.to_here
+            if wave == "dac" collapsed_wave.with_dac = collapsed_wave.to_here
 
-                if wave == "dac" {
-                    collapsed_wave.with_dac = collapsed_wave.to_here
-                }
-
-                if collapsed_wave.with_both == 0 {
-                    const with_fft = collapsed_wave.with_fft
-                    const with_dac = collapsed_wave.with_dac
-                    collapsed_wave.with_both = with_fft.min(with_dac)
-                }
-
-                device_out_connections.at(wave).each(->(out_name) {
-                    next_wavefront.set(out_name, true)
-                })
-            } else {
-                next_wavefront.set(wave, true)
+            if collapsed_wave.with_both == 0 {
+                const with_fft = collapsed_wave.with_fft
+                const with_dac = collapsed_wave.with_dac
+                collapsed_wave.with_both = with_fft.min(with_dac)
             }
-        })
 
-        if next_wavefront.empty() {
-            return collapsed_waves.at("out")
+            device_out_connections.at(wave).each(->(out_name) {
+                next_wavefront.set(out_name, true)
+            })
+        } else {
+            next_wavefront.set(wave, true)
         }
+    })
 
-        wavefront = next_wavefront.keys()
-    }
+    wavefront = next_wavefront.keys()
 }
 
-const out_wave = solve()
+const out_wave = collapsed_waves.at("out")
 print("total paths with both fft and dac =", out_wave.with_both)
