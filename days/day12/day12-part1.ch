@@ -1,6 +1,5 @@
 #!/usr/local/bin/charly
 
-import hashmap as HashMap
 import "./parse-input.ch" as parse_input
 
 if ARGV.length < 2 {
@@ -22,8 +21,7 @@ const valid_regions = regions.filter(->(region, region_id) {
         count * presents[i].map(->(r) [...r].sum()).sum()
     }).sum()
 
-    const enoughArea = gridArea >= minimumRequiredArea
-    enoughArea
+    gridArea >= minimumRequiredArea
 })
 
 print("there are {valid_regions.length} regions that might fit the presents")
